@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+import sys
+if sys.version_info.major == 3:  # noqa: E402
+    from pathlib import Path
+    py3 = True  # noqa: E402
+else:  # noqa: E402
+    from pathlib2 import Path  # Python 2 backport
+    py3 = False  # noqa: E402
 import codecs
 import os
 from io import BytesIO
@@ -51,7 +58,10 @@ class FilesystemStorageBackend(BaseStorageBackend):
     def __init__(self):
         super(FilesystemStorageBackend, self).__init__()
         if not os.path.exists(self.location):
-            os.makedirs(self.location, exist_ok=True)
+            if py3:
+                os.makedirs(self.location, exist_ok=True)
+            else:
+                Path(self.location).mkdir(exist_ok=True)
 
     def _open(self, name, mode='rb', encoding=None, errors='strict'):
         return codecs.open(name, mode=mode, encoding=encoding, errors=errors)
@@ -61,7 +71,10 @@ class FilesystemStorageBackend(BaseStorageBackend):
 
     def _save(self, name, data):
         if not os.path.exists(os.path.dirname(name)):
-            os.makedirs(os.path.dirname(name), exist_ok=True)
+            if py3:
+                os.makedirs(os.path.dirname(name), exist_ok=True)
+            else:
+                Path(os.path.dirname(name)).mkdir(exist_ok=True)
 
         with open(name, 'wb') as f:
             f.write(data)
